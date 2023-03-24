@@ -6,10 +6,6 @@ function getRandomInt(a, b) {
   return Math.floor(result);
 }
 
-// Функция, проверяющая длину строки
-function checkStringLength(string, length) {
-  return string.length <= length;
-}
 
 const commentsList = ['Всё отлично!',
   'В целом всё неплохо. Но не всё.',
