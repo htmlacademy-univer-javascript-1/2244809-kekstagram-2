@@ -1,4 +1,3 @@
-// Функция, возвращающая случайное целое число, от min до max
 function getRandomInt(a, b) {
   const lower = Math.ceil(Math.min(Math.abs(a), Math.abs(b)));
   const upper = Math.floor(Math.max(Math.abs(a), Math.abs(b)));
@@ -57,5 +56,3 @@ function createComment(minn, maxx,) {
 }
 
 createPost(MAX_PHOTO_COUNT);
-
-
