@@ -1,69 +1,80 @@
-const overlay = document.querySelector('.img-upload__overlay');
+const form = document.querySelector('.img-upload__form');
+const imgUploadOverlay = document.querySelector('.img-upload__overlay');
 const body = document.querySelector('body');
 const uploadFile = document.querySelector('#upload-file');
-const hashtagInput = document.querySelector('.text__hashtags');
-const descriptionInput = document.querySelector('.text__description');
-const cancelButton = document.querySelector('#upload-cancel');
-const formElements = document.querySelectorAll('input, textarea');
+const inputForHashtags = document.querySelector('.text__hashtags');
+const inputForDescription = document.querySelector('.text__description');
+const isEscapeKey = evt => evt.key === 'Escape';
 
-const ESCAPE_KEY = 'Escape';
-
-function addEventListeners() {
-  document.addEventListener('keydown', handleEscapeKey);
-  cancelButton.addEventListener('click', closeForm);
-  hashtagInput.addEventListener('focus', removeEscapeKeyListener);
-  descriptionInput.addEventListener('focus', removeEscapeKeyListener);
-  hashtagInput.addEventListener('blur', addEscapeKeyListener);
-  descriptionInput.addEventListener('blur', addEscapeKeyListener);
-}
-
-function removeEventListeners() {
-  document.removeEventListener('keydown', handleEscapeKey);
-  cancelButton.removeEventListener('click', closeForm);
-  hashtagInput.removeEventListener('focus', removeEscapeKeyListener);
-  descriptionInput.removeEventListener('focus', removeEscapeKeyListener);
-  hashtagInput.removeEventListener('blur', addEscapeKeyListener);
-  descriptionInput.removeEventListener('blur', addEscapeKeyListener);
-}
-
-function handleEscapeKey(evt) {
-  if (evt.key === ESCAPE_KEY) {
+const onPopupEscKeydown = evt => {
+  if (isEscapeKey(evt)) {
     evt.preventDefault();
     closeForm();
   }
-}
+};
 
-function removeEscapeKeyListener() {
-  document.removeEventListener('keydown', handleEscapeKey);
-}
+const toggleDocumentKeydownListener = (evt) => {
+  const action = evt.type === 'focus' ? 'removeEventListener' : 'addEventListener';
+  document[action]('keydown', onPopupEscKeydown);
+};
 
-function addEscapeKeyListener() {
-  document.addEventListener('keydown', handleEscapeKey);
-}
+const addListeners = () => {
+  document.addEventListener('keydown', onPopupEscKeydown);
+  document.querySelector('#upload-cancel').addEventListener('click', closeForm);
+  inputForHashtags.addEventListener('focus', toggleDocumentKeydownListener);
+  inputForDescription.addEventListener('focus', toggleDocumentKeydownListener);
+  inputForHashtags.addEventListener('blur', toggleDocumentKeydownListener);
+  inputForDescription.addEventListener('blur', toggleDocumentKeydownListener);
+};
 
-function openForm() {
+const openForm = () => {
   uploadFile.addEventListener('change', () => {
-    overlay.classList.remove('hidden');
+    imgUploadOverlay.classList.remove('hidden');
     body.classList.add('modal-open');
-    addEventListeners();
+    addListeners();
   });
-}
+};
 
-function closeForm() {
-  overlay.classList.add('hidden');
+const removeListeners = () => {
+  document.removeEventListener('keydown', onPopupEscKeydown);
+  inputForHashtags.removeEventListener('focus', toggleDocumentKeydownListener);
+  inputForDescription.removeEventListener('focus', toggleDocumentKeydownListener);
+  inputForHashtags.removeEventListener('blur', toggleDocumentKeydownListener);
+  inputForDescription.removeEventListener('blur', toggleDocumentKeydownListener);
+};
+
+const closeForm = () => {
+  imgUploadOverlay.classList.add('hidden');
   body.classList.remove('modal-open');
-  removeEventListeners();
-  formElements.forEach((el) => (el.value = ''));
-}
+  removeListeners();
+  document.querySelectorAll('input, textarea').forEach(el => (el.value = ''));
+};
 
-const pristine = new Pristine(uploadFile);
+const pristine = new Pristine(form, {
+  classTo: 'text',
+  errorTextParent: 'text',
+});
 
-pristine.addValidator(hashtagInput, (value) => {
-  const arrOfHashtags = value.split(' ').map((v) => v.toLowerCase());
+const isHashtag = hashtag => {
+  const regex = /^#[A-Za-zА-Яа-яЁё0-9]{1,19}/;
+  return regex.test(hashtag);
+};
+
+const validHashtags = value => {
+  if (value === '') return true;
+  const arrOfHashtags = value.split(' ').map(v => v.toLowerCase());
+  if (arrOfHashtags.length > 5 || !arrOfHashtags.every(isHashtag)) return false;
   const duplicates = arrOfHashtags.filter((number, index, numbers) => numbers.indexOf(number) !== index);
-  return duplicates.length > 0;
-}, 'Duplicate hashtags are not allowed.');
+  return duplicates.length === 0;
+};
 
-const isValid = pristine.validate();
+pristine.addValidator(inputForHashtags, validHashtags, 'Incorrect hashtags');
+
+form.addEventListener('submit', evt => {
+  const isValid = pristine.validate();
+  if (!isValid) {
+    evt.preventDefault();
+  }
+});
 
 openForm();
