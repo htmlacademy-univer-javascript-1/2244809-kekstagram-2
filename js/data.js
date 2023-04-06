@@ -11,7 +11,7 @@ const namesList = ['Максим', 'Кирилл', 'Мария', 'Ксения',
 
 const MAX_PHOTO_COUNT = 5;
 const MIN_COMMENTS_COUNT = 1;
-const MAX_COMMENTS_COUNT = 2;
+const MAX_COMMENTS_COUNT = 3;
 let messageId = 1;
 
 const makePosts = (id, likes, comments) => ({
@@ -49,5 +49,7 @@ function createComment(minn, maxx,) {
   return messageList;
 }
 
+
 export {createPost};
+
 
